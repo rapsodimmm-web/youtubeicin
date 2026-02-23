@@ -1,0 +1,35 @@
+name: YouTube to M3U Generator
+
+on:
+  schedule:
+    - cron: '0 */3 * * *' # Her 3 saatte bir otomatik çalışır
+  workflow_dispatch: # İstediğinde manuel çalıştırmanı sağlar
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Generate M3U
+        run: |
+          cd scripts/
+          python youtube_m3ugrabber.py > ../youtube.m3u
+
+      - name: Commit and Push changes
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Action"
+          git add youtube.m3u
+          git commit -m "Update YouTube M3U" || exit 0
+          git push
